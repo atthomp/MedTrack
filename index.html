@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>MedTrack</title>
-<meta name="theme-color" content="#1D9E75" />
+<meta name="theme-color" content="#1D9E75"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -64,6 +64,10 @@ h1{font-size:22px;font-weight:600;margin-bottom:.2rem}
 .tag-urgent{background:var(--red-bg);color:var(--red-text)}.tag-soon{background:var(--amber-bg);color:var(--amber-text)}
 .tag-ok{background:var(--green-bg);color:var(--green-text)}.tag-new{background:var(--blue-bg);color:var(--blue-text)}
 .exam-badge{font-size:10px;padding:1px 6px;background:var(--purple-bg);color:var(--purple-text);border-radius:999px;font-weight:500}
+.diff-badge{font-size:10px;padding:1px 6px;border-radius:999px;font-weight:500}
+.diff-easy{background:var(--green-bg);color:var(--green-text)}
+.diff-medium{background:var(--amber-bg);color:var(--amber-text)}
+.diff-hard{background:var(--red-bg);color:var(--red-text)}
 input,select,textarea{width:100%;padding:8px 10px;font-size:13px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font);outline:none;transition:border-color .12s}
 input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(29,158,117,.15)}
 textarea{resize:vertical;min-height:70px}
@@ -84,7 +88,7 @@ textarea{resize:vertical;min-height:70px}
 .today-card:hover{background:var(--bg2)}
 .today-card-inner{display:flex;align-items:center;gap:12px;padding:12px 1rem}
 .today-card.urgent{border-left:3px solid var(--red)}.today-card.soon{border-left:3px solid var(--amber)}
-.today-card.exam-focus{border-left:3px solid var(--purple)}.today-card.ok{border-left:3px solid var(--green)}
+.today-card.tomorrow{border-left:3px solid var(--blue)}.today-card.exam-focus{border-left:3px solid var(--purple)}
 .filter-bar{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
 .filter-chip{padding:4px 12px;font-size:12px;border-radius:999px;border:0.5px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);transition:all .12s;font-family:var(--font)}
 .filter-chip:hover{border-color:var(--green);color:var(--green)}.filter-chip.active{background:var(--green);color:#fff;border-color:var(--green)}
@@ -95,6 +99,7 @@ textarea{resize:vertical;min-height:70px}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg);border-radius:var(--radius-lg);border:0.5px solid var(--border2);padding:1.5rem;width:580px;max-width:100%;max-height:90vh;overflow-y:auto}
+.modal-wide{width:720px}
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
 .modal-title{font-size:16px;font-weight:600}
 .modal-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);line-height:1}
@@ -123,8 +128,17 @@ textarea{resize:vertical;min-height:70px}
 .tab-bar{display:flex;gap:0;border-bottom:0.5px solid var(--border);margin-bottom:1.25rem}
 .tab{padding:8px 14px;font-size:13px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;transition:all .12s;margin-bottom:-0.5px}
 .tab:hover{color:var(--text)}.tab.active{color:var(--green);border-bottom-color:var(--green);font-weight:500}
-.tab-content{display:none}.tab-content.active{display:block}
 .linked-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;background:var(--blue-bg);border:0.5px solid var(--blue);border-radius:999px;color:var(--blue-text);margin:2px;cursor:pointer}
+.streak-card{background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:var(--radius-lg);padding:.75rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.streak-num{font-size:28px;font-weight:600;color:var(--amber-text)}
+.daily-exam-card{background:var(--blue-bg);border:0.5px solid var(--blue);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between}
+.exam-progress{height:6px;background:var(--bg2);border-radius:3px;margin-bottom:1rem;overflow:hidden}
+.exam-progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+.results-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.results-overlay.open{display:flex}
+.results-modal{background:var(--bg);border-radius:var(--radius-lg);border:0.5px solid var(--border2);padding:2rem;width:600px;max-width:100%;max-height:90vh;overflow-y:auto}
+.topic-check{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px}
+.topic-check input[type=checkbox]{width:auto;cursor:pointer}
 @media(max-width:640px){
   .sidebar{width:52px;min-width:52px}.nav-item span{display:none}.sidebar-logo span{display:none}
   .metric-grid{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}.main{padding:1rem}
@@ -158,7 +172,7 @@ textarea{resize:vertical;min-height:70px}
     <div class="sidebar-logo"><div class="logo-dot"></div><span>MedTrack</span></div>
     <div class="nav-item active" onclick="navigate('today')"><div class="nav-dot"></div><span>Today's Review</span></div>
     <div class="nav-item" onclick="navigate('topics')"><div class="nav-dot"></div><span>Topics</span></div>
-    <div class="nav-item" onclick="navigate('add-topic')"><div class="nav-dot"></div><span>Add Topic</span></div>
+    <div class="nav-item" onclick="navigate('exam-gen')"><div class="nav-dot"></div><span>Exam Generator</span></div>
     <div class="nav-item" onclick="navigate('exams')"><div class="nav-dot"></div><span>Exam Focus</span></div>
     <div class="nav-item" onclick="navigate('progress')"><div class="nav-dot"></div><span>Progress</span></div>
     <div class="nav-item" onclick="navigate('pomodoro')"><div class="nav-dot"></div><span>Pomodoro</span></div>
@@ -167,27 +181,33 @@ textarea{resize:vertical;min-height:70px}
   </div>
   <div class="main">
 
+    <!-- TODAY -->
     <div class="page active" id="page-today">
       <h1>Today's Review</h1>
       <div class="subtitle" id="today-date"></div>
+      <div id="streak-bar"></div>
       <div id="exam-countdown-bar"></div>
       <div class="metric-grid" id="today-metrics"></div>
+      <div id="daily-exam-bar"></div>
       <div id="today-urgent-section" class="today-section"><div class="today-section-title">Overdue — review now</div><div id="today-urgent-list"></div></div>
       <div id="today-due-section" class="today-section"><div class="today-section-title">Due today</div><div id="today-due-list"></div></div>
       <div id="today-exam-section" class="today-section"><div class="today-section-title">Exam focus (priority)</div><div id="today-exam-list"></div></div>
-      <div id="today-ok-section" class="today-section"><div class="today-section-title">Up to date</div><div id="today-ok-list"></div></div>
-      <div id="today-empty" style="display:none"><div class="empty-state">No topics yet. <span class="empty-link" onclick="navigate('add-topic')">Add your first topic →</span></div></div>
+      <div id="today-tomorrow-section" class="today-section"><div class="today-section-title">Due tomorrow</div><div id="today-tomorrow-list"></div></div>
+      <div id="today-empty" style="display:none"><div class="empty-state">No topics yet. <span class="empty-link" onclick="navigate('topics')">Go to Topics to add your first →</span></div></div>
     </div>
 
+    <!-- TOPICS -->
     <div class="page" id="page-topics">
       <div class="section-header"><div><h1>Topics</h1><div class="subtitle">All topics and review status</div></div><button class="btn btn-primary" onclick="navigate('add-topic')">+ Add topic</button></div>
       <div class="filter-bar" id="topic-filters"></div>
       <div class="card" style="padding:0;overflow:hidden"><div id="topics-list"></div></div>
     </div>
 
+    <!-- ADD / EDIT TOPIC -->
     <div class="page" id="page-add-topic">
-      <h1>Add topic</h1><div class="subtitle">Add a new study topic</div>
+      <h1 id="add-topic-title">Add topic</h1><div class="subtitle" id="add-topic-subtitle">Add a new study topic</div>
       <div class="card">
+        <input type="hidden" id="edit-topic-id"/>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Topic name *</label><input type="text" id="new-name" placeholder="e.g. Cardiac physiology"/></div>
           <div class="form-group"><label class="form-label">System / category</label><input type="text" id="new-system" placeholder="e.g. Cardiovascular"/></div>
@@ -209,6 +229,38 @@ textarea{resize:vertical;min-height:70px}
       </div>
     </div>
 
+    <!-- EXAM GENERATOR -->
+    <div class="page" id="page-exam-gen">
+      <h1>Exam Generator</h1><div class="subtitle">Build a tailored mock exam from your MCQ bank</div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Number of questions</label>
+            <select id="gen-count"><option value="10">10</option><option value="20" selected>20</option><option value="40">40</option><option value="custom">Custom</option></select>
+          </div>
+          <div class="form-group" id="gen-custom-wrap" style="display:none">
+            <label class="form-label">Custom number</label>
+            <input type="number" id="gen-custom" min="1" max="100" placeholder="e.g. 30"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Difficulty</label>
+            <select id="gen-diff"><option value="all">All difficulties</option><option value="Easy">Easy only</option><option value="Medium">Medium only</option><option value="Hard">Hard only</option><option value="Mixed">Mixed (Medium + Hard)</option></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Topics to include</label>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <button type="button" class="btn btn-sm" onclick="selectAllTopics(true)">Select all</button>
+            <button type="button" class="btn btn-sm" onclick="selectAllTopics(false)">Deselect all</button>
+          </div>
+          <div id="gen-topic-list" style="max-height:220px;overflow-y:auto;border:0.5px solid var(--border2);border-radius:var(--radius);padding:8px"></div>
+        </div>
+        <div id="gen-bank-info" style="font-size:12px;color:var(--text2);margin-bottom:1rem"></div>
+        <button class="btn btn-primary" onclick="startGeneratedExam()">Generate exam</button>
+      </div>
+    </div>
+
+    <!-- EXAM FOCUS -->
     <div class="page" id="page-exams">
       <h1>Exam focus</h1><div class="subtitle">Toggle exam-critical topics and set your exam date</div>
       <div class="card" style="margin-bottom:1rem">
@@ -220,6 +272,7 @@ textarea{resize:vertical;min-height:70px}
       <div class="card" style="padding:0;overflow:hidden"><div id="exam-topics-list"></div></div>
     </div>
 
+    <!-- PROGRESS -->
     <div class="page" id="page-progress">
       <h1>Progress</h1><div class="subtitle">Study activity and topic coverage</div>
       <div class="metric-grid" id="progress-metrics"></div>
@@ -230,6 +283,7 @@ textarea{resize:vertical;min-height:70px}
       <div class="card"><div style="font-size:14px;font-weight:500;margin-bottom:1rem">Topics needing most attention</div><div id="attention-list"></div></div>
     </div>
 
+    <!-- POMODORO -->
     <div class="page" id="page-pomodoro">
       <h1>Pomodoro timer</h1><div class="subtitle">Focus sessions with automatic breaks</div>
       <div class="card" style="text-align:center;padding:2rem">
@@ -263,6 +317,7 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
+<!-- TOPIC MODAL -->
 <div class="modal-overlay" id="topic-modal">
   <div class="modal">
     <div class="modal-header"><span class="modal-title" id="modal-topic-name"></span><button class="modal-close" onclick="closeModal()">&#x2715;</button></div>
@@ -272,6 +327,26 @@ textarea{resize:vertical;min-height:70px}
       <div class="tab" onclick="switchTab('history')">History</div>
     </div>
     <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- EXAM RUNNING MODAL -->
+<div class="modal-overlay" id="exam-modal">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <span class="modal-title" id="exam-modal-title">Exam</span>
+      <button class="modal-close" onclick="closeExamModal()">&#x2715;</button>
+    </div>
+    <div class="exam-progress"><div class="exam-progress-fill" id="exam-progress-fill"></div></div>
+    <div id="exam-modal-body"></div>
+  </div>
+</div>
+
+<!-- RESULTS OVERLAY -->
+<div class="results-overlay" id="results-overlay">
+  <div class="results-modal">
+    <div class="modal-header"><span class="modal-title">Exam results</span><button class="modal-close" onclick="closeResults()">&#x2715;</button></div>
+    <div id="results-body"></div>
   </div>
 </div>
 
@@ -286,6 +361,7 @@ function fmtDate(ds){if(!ds)return'Never';return new Date(ds).toLocaleDateString
 let state={topics:[],sessions:[],mcqs:[],exam:null,filter:'all',currentTopicId:null,currentTab:'overview',userId:null};
 let accessToken=null;
 
+// ---- SUPABASE ----
 async function supa(method,path,body){
   setSyncing(true);
   try{
@@ -306,9 +382,9 @@ function setSyncing(s){
   if(d)d.className='sync-dot '+(s?'syncing':'online');if(l)l.textContent=s?'Syncing...':'Synced';
 }
 
+// ---- AUTH ----
 function showRegister(){document.getElementById('auth-mode-login').style.display='none';document.getElementById('auth-mode-register').style.display='';}
 function showLogin(){document.getElementById('auth-mode-register').style.display='none';document.getElementById('auth-mode-login').style.display='';}
-
 async function login(){
   const email=document.getElementById('login-email').value.trim();
   const password=document.getElementById('login-password').value;
@@ -328,7 +404,6 @@ async function register(){
   showApp();
 }
 async function signOut(){accessToken=null;state.userId=null;localStorage.removeItem('mt_token');localStorage.removeItem('mt_uid');location.reload();}
-
 async function tryAutoLogin(){
   const token=localStorage.getItem('mt_token');const uid=localStorage.getItem('mt_uid');
   if(!token||!uid){document.getElementById('auth-screen').style.display='flex';return;}
@@ -342,9 +417,12 @@ async function tryAutoLogin(){
 async function showApp(){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('main-app').style.display='flex';
-  await loadAll();renderAll();
+  await loadAll();
+  addResourceRow();
+  renderAll();
 }
 
+// ---- DATA ----
 async function loadAll(){
   const[topics,sessions,mcqs,exam]=await Promise.all([
     supa('GET','topics?user_id=eq.'+state.userId+'&order=created_at.asc'),
@@ -364,6 +442,7 @@ async function loadAll(){
 }
 function saveLocal(){try{localStorage.setItem('mt_local',JSON.stringify({topics:state.topics,sessions:state.sessions,mcqs:state.mcqs}));}catch(e){}}
 
+// ---- SR ALGORITHM ----
 function nextInterval(reps,interval,ease,examFocus,confidence){
   const conf=confidence||3;
   const cm=conf===1?0.5:conf===2?0.75:conf===4?1.15:conf===5?1.3:1.0;
@@ -378,6 +457,12 @@ function urgency(t){
   const days=daysBetween(t.last_studied);const due=t.next_due||1;
   if(days>=due+3)return'urgent';if(days>=due)return'due';if(days>=due-1)return'soon';return'ok';
 }
+function isTomorrow(t){
+  if(!t.next_due_date)return false;
+  const d=new Date(t.next_due_date);d.setHours(0,0,0,0);
+  const tom=new Date(TODAY);tom.setDate(tom.getDate()+1);
+  return d.getTime()===tom.getTime();
+}
 function urgencyOrder(t){return{urgent:0,due:1,soon:2,new:3,ok:4}[urgency(t)];}
 function urgencyTag(t){
   const u=urgency(t);const days=t.last_studied?daysBetween(t.last_studied):null;
@@ -387,6 +472,19 @@ function urgencyTag(t){
 }
 function urgencyDot(t){const cls={urgent:'u-urgent',due:'u-soon',soon:'u-soon',new:'u-new',ok:'u-ok'}[urgency(t)];return`<div class="urgency-indicator ${cls}"></div>`;}
 
+// ---- STREAK ----
+function calcStreak(){
+  const studied=new Set(state.sessions.map(s=>s.studied_on));
+  let streak=0;const d=new Date(TODAY);
+  while(true){
+    const ds=d.toISOString().split('T')[0];
+    if(studied.has(ds)){streak++;d.setDate(d.getDate()-1);}
+    else break;
+  }
+  return streak;
+}
+
+// ---- MARK STUDIED ----
 async function markStudied(id,dateStr,confidence,notes){
   const t=state.topics.find(x=>x.id===id);if(!t)return;
   const conf=confidence||t.confidence||3;
@@ -401,25 +499,61 @@ async function markStudied(id,dateStr,confidence,notes){
   saveLocal();renderAll();closeModal();
 }
 
+// ---- SAVE / EDIT TOPIC ----
 async function saveTopic(){
   const name=document.getElementById('new-name').value.trim();if(!name){alert('Please enter a topic name.');return;}
+  const editId=document.getElementById('edit-topic-id').value;
   const system=document.getElementById('new-system').value.trim();
   const resourceRows=[...document.getElementById('resources-list').children];
   const concepts=document.getElementById('new-concepts').value.trim();
   const date=document.getElementById('new-date').value;
   const linkedEl=document.getElementById('new-linked');
   const linked=[...linkedEl.selectedOptions].map(o=>o.value);
-  const reps=date?1:0;const interval=date?nextInterval(0,1,2.5,false,3):1;
-  let nextDueDate=null;
-  if(date){const nd=new Date(date);nd.setDate(nd.getDate()+interval);nextDueDate=nd.toISOString().split('T')[0];}
-  const topic={id:Date.now().toString()+Math.random().toString(36).slice(2),user_id:state.userId,name,system:system||null,
-    resources:resourceRows.map(row=>({label:row.children[0].value.trim(),url:row.children[1].value.trim()||null})).filter(r=>r.label),
-    concepts:concepts?concepts.split(/[\n,]+/).map(c=>c.trim()).filter(Boolean):[],
-    last_studied:date||null,reps,ease:2.5,current_interval:interval,next_due:interval,next_due_date:nextDueDate,
-    exam_focus:false,confidence:3,linked_topics:linked,created_at:todayStr()};
-  const saved=await supa('POST','topics',topic);
-  state.topics.push(saved&&saved[0]?saved[0]:topic);
-  saveLocal();renderAll();navigate('topics');
+  const resources=resourceRows.map(row=>({label:row.children[0].value.trim(),url:row.children[1].value.trim()||null})).filter(r=>r.label);
+  const conceptList=concepts?concepts.split(/[\n,]+/).map(c=>c.trim()).filter(Boolean):[];
+
+  if(editId){
+    // EDIT existing
+    const t=state.topics.find(x=>x.id===editId);if(!t)return;
+    t.name=name;t.system=system||null;t.resources=resources;t.concepts=conceptList;t.linked_topics=linked;
+    await supa('PATCH','topics?id=eq.'+editId,{name:t.name,system:t.system,resources:t.resources,concepts:t.concepts,linked_topics:t.linked_topics});
+    saveLocal();renderAll();navigate('topics');
+  } else {
+    // NEW topic
+    const reps=date?1:0;const interval=date?nextInterval(0,1,2.5,false,3):1;
+    let nextDueDate=null;
+    if(date){const nd=new Date(date);nd.setDate(nd.getDate()+interval);nextDueDate=nd.toISOString().split('T')[0];}
+    const topic={id:Date.now().toString()+Math.random().toString(36).slice(2),user_id:state.userId,name,system:system||null,
+      resources,concepts:conceptList,
+      last_studied:date||null,reps,ease:2.5,current_interval:interval,next_due:interval,next_due_date:nextDueDate,
+      exam_focus:false,confidence:3,linked_topics:linked,created_at:todayStr()};
+    const saved=await supa('POST','topics',topic);
+    state.topics.push(saved&&saved[0]?saved[0]:topic);
+    saveLocal();renderAll();navigate('topics');
+  }
+}
+
+function openEditTopic(id){
+  const t=state.topics.find(x=>x.id===id);if(!t)return;
+  closeModal();
+  document.getElementById('add-topic-title').textContent='Edit topic';
+  document.getElementById('add-topic-subtitle').textContent='Update this topic\'s details';
+  document.getElementById('edit-topic-id').value=id;
+  document.getElementById('new-name').value=t.name||'';
+  document.getElementById('new-system').value=t.system||'';
+  document.getElementById('new-concepts').value=(t.concepts||[]).join(', ');
+  document.getElementById('new-date').value=t.last_studied||'';
+  const sel=document.getElementById('new-linked');
+  sel.innerHTML=state.topics.filter(x=>x.id!==id).map(x=>`<option value="${x.id}" ${(t.linked_topics||[]).includes(x.id)?'selected':''}>${x.name}</option>`).join('');
+  const resList=document.getElementById('resources-list');resList.innerHTML='';
+  (t.resources||[]).forEach(r=>{
+    if(typeof r==='string')addResourceRow(r,'');
+    else addResourceRow(r.label||'',r.url||'');
+  });
+  if(!t.resources||!t.resources.length)addResourceRow();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-add-topic').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
 }
 
 async function deleteTopic(id){
@@ -444,16 +578,21 @@ async function saveExamDate(){
   renderAll();
 }
 
+// ---- MCQ IMPORT ----
 async function importMCQs(topicId){
   const raw=document.getElementById('mcq-paste-area').value.trim();if(!raw){alert('Paste MCQs from NotebookLM first.');return;}
-  const parsed=parseMCQs(raw);if(!parsed.length){alert('Could not parse MCQs. Use the Claude prompt format.');return;}
+  const diffEl=document.getElementById('mcq-difficulty-select');
+  const difficulty=diffEl?diffEl.value:'Medium';
+  const parsed=parseMCQs(raw,difficulty);if(!parsed.length){alert('Could not parse MCQs. Use the NotebookLM prompt format.');return;}
   const toSave=parsed.map(q=>({...q,user_id:state.userId,topic_id:topicId}));
   const saved=await supa('POST','mcqs',toSave);
   state.mcqs.push(...(saved||toSave));
-  alert(parsed.length+' MCQs imported!');openTopicModal(topicId);
+  saveLocal();
+  alert(parsed.length+' MCQs imported at '+difficulty+' difficulty!');openTopicModal(topicId);
 }
 
-function parseMCQs(raw){
+function parseMCQs(raw,difficulty){
+  const diff=difficulty||'Medium';
   const blocks=raw.split(/\n(?=Q\d+[:.])/i).filter(Boolean);const result=[];
   for(const block of blocks){
     const lines=block.split('\n').map(l=>l.trim()).filter(Boolean);if(!lines.length)continue;
@@ -466,11 +605,12 @@ function parseMCQs(raw){
       const m=l.match(/^([A-E])[).]\s*(\*?)(.*)/);
       if(m){if(m[2]==='*')correctIndex=options.length;options.push((m[3]||'').trim());}
     }
-    if(qLine&&options.length>=2)result.push({question:qLine,options:JSON.stringify(options),correct_index:correctIndex,explanation:explanation||null});
+    if(qLine&&options.length>=2)result.push({question:qLine,options:JSON.stringify(options),correct_index:correctIndex,explanation:explanation||null,difficulty:diff,times_answered:0,times_correct:0});
   }
   return result;
 }
 
+// ---- RESOURCE ROWS ----
 function addResourceRow(label='',url=''){
   const div=document.createElement('div');
   div.style.cssText='display:flex;gap:6px;margin-bottom:6px;align-items:center';
@@ -478,17 +618,18 @@ function addResourceRow(label='',url=''){
   document.getElementById('resources-list').appendChild(div);
 }
 
+// ---- NOTEBOOKLM PROMPT ----
 function copyNotebookLMPrompt(id){
   const t=state.topics.find(x=>x.id===id);if(!t)return;
   const conf=t.confidence||3;
   const resourceLabels=(t.resources||[]).map(r=>typeof r==='string'?r:r.label).join(', ')||'your course resources';
   const conceptList=(t.concepts||[]).join(', ')||'the core concepts for this topic';
   const styles={
-    1:`Generate 5 basic recall MCQs testing definitions and core mechanisms only. Questions should be straightforward with clear single correct answers. No clinical scenarios.`,
-    2:`Generate 5 comprehension MCQs. Ask the student to explain processes, compare two related concepts, or identify the next step in a mechanism. Avoid pure recall.`,
-    3:`Generate 5 application MCQs using brief, straightforward clinical scenarios (1-2 sentences). The clinical context should require applying the concept, not just recalling it.`,
-    4:`Generate 5 complex clinical MCQs. Use multi-step reasoning, competing differentials, or patients with complicating factors. Each vignette should require integrating multiple concepts.`,
-    5:`Generate 5 difficult exam-style vignettes with atypical presentations, high-yield edge cases, or questions that discriminate between similar conditions. These should challenge a well-prepared student.`
+    1:'Generate 5 basic recall MCQs testing definitions and core mechanisms only. Questions should be straightforward with clear single correct answers. No clinical scenarios.',
+    2:'Generate 5 comprehension MCQs. Ask the student to explain processes, compare two related concepts, or identify the next step in a mechanism. Avoid pure recall.',
+    3:'Generate 5 application MCQs using brief, straightforward clinical scenarios (1-2 sentences). The clinical context should require applying the concept, not just recalling it.',
+    4:'Generate 5 complex clinical MCQs. Use multi-step reasoning, competing differentials, or patients with complicating factors. Each vignette should require integrating multiple concepts.',
+    5:'Generate 5 difficult exam-style vignettes with atypical presentations, high-yield edge cases, or questions that discriminate between similar conditions. These should challenge a well-prepared student.'
   };
   const prompt=`I am a medical student preparing for exams. Topic: "${t.name}"${t.system?' ('+t.system+')':''}.
 
@@ -508,26 +649,32 @@ Explanation: [One sentence explaining why the correct answer is right]
 
 Q2: ...`;
   navigator.clipboard.writeText(prompt).then(()=>{
-    const btn=document.querySelector('.btn-claude');
+    const btn=document.querySelector('[data-nb-btn]');
     if(btn){const orig=btn.textContent;btn.textContent='Prompt copied ✓';btn.style.background='var(--green)';btn.style.color='#fff';setTimeout(()=>{btn.textContent=orig;btn.style.background='';btn.style.color='';},2500);}
   }).catch(()=>alert('Copy failed — please copy manually:\n\n'+prompt));
 }
 
+// ---- NAVIGATE ----
 function navigate(page){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  const map={today:0,topics:1,'add-topic':2,exams:3,progress:4,pomodoro:5};
+  document.getElementById('page-'+page)?.classList.add('active');
+  const map={today:0,topics:1,'exam-gen':2,exams:3,progress:4,pomodoro:5};
   document.querySelectorAll('.nav-item')[map[page]]?.classList.add('active');
   if(page==='add-topic'){
+    document.getElementById('add-topic-title').textContent='Add topic';
+    document.getElementById('add-topic-subtitle').textContent='Add a new study topic';
+    document.getElementById('edit-topic-id').value='';
     document.getElementById('new-name').value='';document.getElementById('new-system').value='';
     document.getElementById('resources-list').innerHTML='';addResourceRow();
     document.getElementById('new-concepts').value='';document.getElementById('new-date').value='';
     const sel=document.getElementById('new-linked');sel.innerHTML=state.topics.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
   }
+  if(page==='exam-gen')renderExamGen();
   renderAll();
 }
 
+// ---- MODAL ----
 let currentModalTopicId=null;
 function openTopicModal(id){
   currentModalTopicId=id;const t=state.topics.find(x=>x.id===id);if(!t)return;
@@ -538,7 +685,7 @@ function openTopicModal(id){
 function closeModal(){document.getElementById('topic-modal').classList.remove('open');state.currentTab='overview';}
 function switchTab(tab){
   state.currentTab=tab;
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','quiz','history'][i]===tab));
+  document.querySelectorAll('#topic-modal .tab').forEach((t,i)=>t.classList.toggle('active',['overview','quiz','history'][i]===tab));
   const t=state.topics.find(x=>x.id===currentModalTopicId);if(!t)return;
   if(tab==='overview')renderModalOverview(t);
   if(tab==='quiz')renderModalQuiz(t);
@@ -569,87 +716,356 @@ function renderModalOverview(t){
       <div style="margin-top:8px"><label class="form-label">Session notes (optional)</label><textarea id="modal-notes" placeholder="What did you cover? Any gaps?" style="min-height:50px"></textarea></div>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="markStudied('${t.id}',document.getElementById('modal-date').value,pendingConf,document.getElementById('modal-notes').value)">Mark studied</button>
-        <button class="btn btn-claude" onclick="copyNotebookLMPrompt('${t.id}')">Copy prompt for NotebookLM</button>
+        <button class="btn btn-claude" data-nb-btn onclick="copyNotebookLMPrompt('${t.id}')">Copy prompt for NotebookLM</button>
       </div>
     </div>
     <div style="border-top:0.5px solid var(--border);padding-top:1rem;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn ${t.exam_focus?'':'btn-primary'}" onclick="toggleExamFocus('${t.id}');openTopicModal('${t.id}')">${t.exam_focus?'Remove exam focus':'Set as exam focus'}</button>
+      <button class="btn" onclick="openEditTopic('${t.id}')">Edit topic</button>
       <button class="btn btn-danger btn-sm" onclick="deleteTopic('${t.id}')">Delete</button>
     </div>`;
   document.getElementById('modal-body').innerHTML=html;
 }
 function setConf(n){pendingConf=n;document.getElementById('conf-stars').innerHTML=[1,2,3,4,5].map(i=>`<span class="star ${i<=n?'active':''}" onclick="setConf(${i})">★</span>`).join('');}
 
-let quizState={current:0,score:0};
+// ---- TOPIC QUIZ (per-topic) ----
+let quizState={current:0,score:0,results:[],startTime:null};
 function renderModalQuiz(t){
   const mqs=state.mcqs.filter(m=>m.topic_id===t.id);
   let html='';
   if(!mqs.length){
-    html=`<div style="margin-bottom:1rem;font-size:13px;color:var(--text2)">No MCQs yet. Use the <strong>Copy prompt for NotebookLM</strong> button on the Overview tab to generate questions, then paste them below.</div>
+    html=`<div style="margin-bottom:1rem;font-size:13px;color:var(--text2)">No MCQs yet. Use <strong>Copy prompt for NotebookLM</strong> on the Overview tab, then paste the output below.</div>
+      <div class="form-group"><label class="form-label">Difficulty of these questions</label><select id="mcq-difficulty-select"><option value="Easy">Easy</option><option value="Medium" selected>Medium</option><option value="Hard">Hard</option></select></div>
       <div class="form-group"><label class="form-label">Paste MCQs from NotebookLM</label><textarea id="mcq-paste-area" style="min-height:120px" placeholder="Paste the formatted MCQs here..."></textarea></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-primary" onclick="importMCQs('${t.id}')">Import MCQs</button>
-      </div>`;
+      <button class="btn btn-primary" onclick="importMCQs('${t.id}')">Import MCQs</button>`;
   } else {
-    if(quizState.current>=mqs.length)quizState.current=0;
+    if(quizState.current>=mqs.length){quizState.current=0;quizState.score=0;quizState.results=[];}
+    if(!quizState.startTime)quizState.startTime=Date.now();
     const q=mqs[quizState.current];const opts=JSON.parse(q.options||'[]');
+    const diffCls={Easy:'diff-easy',Medium:'diff-medium',Hard:'diff-hard'}[q.difficulty||'Medium']||'diff-medium';
     html=`
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
         <div style="font-size:12px;color:var(--text2)">Question ${quizState.current+1} of ${mqs.length}</div>
-        <div style="font-size:12px;color:var(--green-text)">Score: ${quizState.score}/${mqs.length}</div>
+        <div style="display:flex;gap:6px;align-items:center"><span class="diff-badge ${diffCls}">${q.difficulty||'Medium'}</span><span style="font-size:12px;color:var(--green-text)">Score: ${quizState.score}/${quizState.current}</span></div>
       </div>
       <div style="font-size:15px;font-weight:500;margin-bottom:1rem;line-height:1.5">${q.question}</div>
-      <div id="quiz-options">${opts.map((o,i)=>`<div class="mcq-option" id="opt-${i}" onclick="answerMCQ(${i},${q.correct_index},\`${(q.explanation||'').replace(/`/g,"'")}\`)">${String.fromCharCode(65+i)}) ${o}</div>`).join('')}</div>
+      <div id="quiz-options">${opts.map((o,i)=>`<div class="mcq-option" id="opt-${i}" onclick="answerTopicMCQ(${i},${q.correct_index},\`${(q.explanation||'').replace(/`/g,"'")}\`,\`${(q.question||'').replace(/`/g,"'")}\`,${JSON.stringify(opts)},\`${q.difficulty||'Medium'}\`)">${String.fromCharCode(65+i)}) ${o}</div>`).join('')}</div>
       <div id="quiz-explanation" style="display:none;margin-top:1rem;padding:10px 14px;background:var(--bg2);border-radius:var(--radius);font-size:13px;color:var(--text2)"></div>
+      <div id="quiz-claude-btn" style="display:none;margin-top:8px"></div>
       <div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap">
-        <button class="btn btn-sm" onclick="prevMCQ()" ${quizState.current===0?'disabled':''}>← Prev</button>
-        <button class="btn btn-sm btn-primary" onclick="nextMCQ(${mqs.length})">Next →</button>
-        <button class="btn btn-sm" onclick="quizState={current:0,score:0};renderModalQuiz(state.topics.find(x=>x.id==='${t.id}'))">Restart</button>
+        <button class="btn btn-sm" onclick="prevTopicMCQ()" ${quizState.current===0?'disabled':''}>← Prev</button>
+        <button class="btn btn-sm btn-primary" id="next-mcq-btn" onclick="nextTopicMCQ(${mqs.length},'${t.id}')">Next →</button>
+        <button class="btn btn-sm" onclick="quizState={current:0,score:0,results:[],startTime:Date.now()};renderModalQuiz(state.topics.find(x=>x.id==='${t.id}'))">Restart</button>
       </div>
       <div style="margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem">
+        <div class="form-group" style="margin-bottom:6px"><label class="form-label">Difficulty of new questions</label><select id="mcq-difficulty-select"><option value="Easy">Easy</option><option value="Medium" selected>Medium</option><option value="Hard">Hard</option></select></div>
         <div class="form-group" style="margin:0"><label class="form-label">Paste more MCQs from NotebookLM</label><textarea id="mcq-paste-area" style="min-height:60px" placeholder="Paste additional questions..."></textarea></div>
         <button class="btn btn-sm" style="margin-top:6px" onclick="importMCQs('${t.id}')">Import</button>
       </div>`;
   }
   document.getElementById('modal-body').innerHTML=html;
 }
-function answerMCQ(selected,correct,explanation){
-  const opts=document.querySelectorAll('.mcq-option');
-  opts.forEach((el,i)=>{if(i===correct)el.classList.add('correct');else if(i===selected&&selected!==correct)el.classList.add('wrong');else el.classList.add('revealed');el.style.pointerEvents='none';});
-  if(selected===correct)quizState.score++;
-  const ex=document.getElementById('quiz-explanation');if(explanation&&ex){ex.style.display='';ex.textContent=explanation;}
-}
-function nextMCQ(total){quizState.current=Math.min(quizState.current+1,total-1);const t=state.topics.find(x=>x.id===currentModalTopicId);if(t)renderModalQuiz(t);}
-function prevMCQ(){quizState.current=Math.max(quizState.current-1,0);const t=state.topics.find(x=>x.id===currentModalTopicId);if(t)renderModalQuiz(t);}
 
+function answerTopicMCQ(selected,correct,explanation,question,opts,difficulty){
+  const isCorrect=selected===correct;
+  document.querySelectorAll('#topic-modal .mcq-option').forEach((el,i)=>{
+    if(i===correct)el.classList.add('correct');
+    else if(i===selected&&!isCorrect)el.classList.add('wrong');
+    else el.classList.add('revealed');
+    el.style.pointerEvents='none';
+  });
+  if(isCorrect)quizState.score++;
+  quizState.results.push({correct:isCorrect,difficulty});
+  const ex=document.getElementById('quiz-explanation');
+  if(explanation&&ex){ex.style.display='';ex.textContent=explanation;}
+  // Claude clarification button
+  const cb=document.getElementById('quiz-claude-btn');
+  if(cb){
+    const optText=opts.map((o,i)=>`${String.fromCharCode(65+i)}) ${o}${i===correct?' ✓':''}`).join('\n');
+    const prompt=`I just answered an MCQ and need clarification.\n\nQuestion: ${question}\n\nOptions:\n${optText}\n\nExplanation given: ${explanation||'None provided'}\n\nI ${isCorrect?'got this right but want':'got this wrong and need'} a deeper explanation. Please explain the key concept being tested and any related clinical pearls I should know.`;
+    cb.style.display='';
+    cb.innerHTML=`<button class="btn btn-claude btn-sm" onclick="askClaudeAboutMCQ(\`${prompt.replace(/`/g,"'")}\`)">Ask Claude for clarification ↗</button>`;
+  }
+}
+
+function askClaudeAboutMCQ(prompt){
+  navigator.clipboard.writeText(prompt).then(()=>{
+    window.open('https://claude.ai/new','_blank');
+  }).catch(()=>window.open('https://claude.ai/new','_blank'));
+}
+
+function nextTopicMCQ(total,topicId){
+  if(quizState.current===total-1){
+    // show results
+    const elapsed=Math.round((Date.now()-(quizState.startTime||Date.now()))/1000);
+    showResults(quizState.score,total,quizState.results,elapsed,()=>{
+      quizState={current:0,score:0,results:[],startTime:null};
+      const t=state.topics.find(x=>x.id===topicId);if(t)renderModalQuiz(t);
+    });
+    return;
+  }
+  quizState.current=Math.min(quizState.current+1,total-1);
+  const t=state.topics.find(x=>x.id===topicId);if(t)renderModalQuiz(t);
+}
+function prevTopicMCQ(){quizState.current=Math.max(quizState.current-1,0);const t=state.topics.find(x=>x.id===currentModalTopicId);if(t)renderModalQuiz(t);}
+
+// ---- RESULTS POPUP ----
+function showResults(score,total,results,elapsed,retakeFn){
+  const pct=total?Math.round(score/total*100):0;
+  const byDiff={Easy:{c:0,t:0},Medium:{c:0,t:0},Hard:{c:0,t:0}};
+  const wrongTopics={};const rightTopics={};
+  results.forEach(r=>{
+    const d=r.difficulty||'Medium';
+    if(!byDiff[d])byDiff[d]={c:0,t:0};
+    byDiff[d].t++;if(r.correct)byDiff[d].c++;
+    const tid=r.topicId;
+    if(tid){
+      const tn=state.topics.find(x=>x.id===tid)?.name||tid;
+      if(r.correct){rightTopics[tn]=(rightTopics[tn]||0)+1;}
+      else{wrongTopics[tn]=(wrongTopics[tn]||0)+1;}
+    }
+  });
+  const mins=Math.floor(elapsed/60);const secs=elapsed%60;
+  let html=`
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:48px;font-weight:700;color:${pct>=70?'var(--green)':pct>=50?'var(--amber)':'var(--red)'}">${pct}%</div>
+      <div style="font-size:16px;color:var(--text2);margin-top:4px">${score} / ${total} correct · ${mins}m ${secs}s</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.25rem">`;
+  ['Easy','Medium','Hard'].forEach(d=>{
+    const dd=byDiff[d];
+    html+=`<div class="metric"><div class="metric-label">${d}</div><div style="font-size:18px;font-weight:600">${dd.t?dd.c+'/'+dd.t:'—'}</div></div>`;
+  });
+  html+='</div>';
+  const weakList=Object.entries(wrongTopics).sort((a,b)=>b[1]-a[1]);
+  const strongList=Object.entries(rightTopics).sort((a,b)=>b[1]-a[1]);
+  if(weakList.length){
+    html+=`<div style="margin-bottom:1rem"><div class="form-label" style="margin-bottom:6px;color:var(--red-text)">Needs attention</div>${weakList.map(([n,c])=>`<div style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">${n} <span style="color:var(--red-text);float:right">${c} wrong</span></div>`).join('')}</div>`;
+  }
+  if(strongList.length){
+    html+=`<div style="margin-bottom:1.5rem"><div class="form-label" style="margin-bottom:6px;color:var(--green-text)">Strong areas</div>${strongList.slice(0,3).map(([n,c])=>`<div style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">${n} <span style="color:var(--green-text);float:right">${c} correct</span></div>`).join('')}</div>`;
+  }
+  html+=`<div style="display:flex;gap:8px;justify-content:center">
+    <button class="btn btn-primary" onclick="document.getElementById('results-overlay').classList.remove('open');(${retakeFn.toString()})()">Retake</button>
+    <button class="btn" onclick="closeResults()">Close</button>
+  </div>`;
+  document.getElementById('results-body').innerHTML=html;
+  document.getElementById('results-overlay').classList.add('open');
+}
+function closeResults(){document.getElementById('results-overlay').classList.remove('open');}
+
+// ---- EXAM GENERATOR ----
+let examSession={questions:[],current:0,score:0,results:[],startTime:null};
+
+function renderExamGen(){
+  const el=document.getElementById('gen-topic-list');
+  if(!state.topics.length){el.innerHTML='<div style="font-size:13px;color:var(--text2)">No topics yet.</div>';return;}
+  el.innerHTML=state.topics.map(t=>{
+    const count=state.mcqs.filter(m=>m.topic_id===t.id).length;
+    return`<label class="topic-check"><input type="checkbox" class="gen-topic-cb" value="${t.id}" ${count>0?'checked':'disabled'}><span>${t.name}${t.exam_focus?' <span class="exam-badge">exam</span>':''} <span style="color:var(--text3)">(${count} MCQs)</span></span></label>`;
+  }).join('');
+  updateGenBankInfo();
+  document.getElementById('gen-count').onchange=updateGenBankInfo;
+  document.getElementById('gen-diff').onchange=updateGenBankInfo;
+  document.querySelectorAll('.gen-topic-cb').forEach(cb=>cb.onchange=updateGenBankInfo);
+}
+
+function updateGenBankInfo(){
+  const selTopics=getSelectedGenTopics();
+  const diff=document.getElementById('gen-diff').value;
+  let pool=state.mcqs.filter(m=>selTopics.includes(m.topic_id));
+  if(diff!=='all'&&diff!=='Mixed')pool=pool.filter(m=>(m.difficulty||'Medium')===diff);
+  if(diff==='Mixed')pool=pool.filter(m=>m.difficulty==='Medium'||m.difficulty==='Hard');
+  const countEl=document.getElementById('gen-count');
+  const requested=countEl.value==='custom'?(parseInt(document.getElementById('gen-custom').value)||20):parseInt(countEl.value);
+  document.getElementById('gen-bank-info').textContent=`${pool.length} questions available · exam will use ${Math.min(pool.length,requested)}`;
+}
+
+function selectAllTopics(val){
+  document.querySelectorAll('.gen-topic-cb:not(:disabled)').forEach(cb=>cb.checked=val);
+  updateGenBankInfo();
+}
+
+function getSelectedGenTopics(){
+  return [...document.querySelectorAll('.gen-topic-cb:checked')].map(cb=>cb.value);
+}
+
+function buildExamQuestions(topicIds,diff,count){
+  // get pool
+  let pool=state.mcqs.filter(m=>topicIds.includes(m.topic_id));
+  if(diff!=='all'&&diff!=='Mixed')pool=pool.filter(m=>(m.difficulty||'Medium')===diff);
+  if(diff==='Mixed')pool=pool.filter(m=>m.difficulty==='Medium'||m.difficulty==='Hard');
+  if(!pool.length)return[];
+
+  // weight by topic: exam_focus 2x, low confidence more
+  const topicWeight=t=>{
+    const topic=state.topics.find(x=>x.id===t.topic_id);
+    if(!topic)return 1;
+    const ef=topic.exam_focus?2:1;
+    const conf=topic.confidence||3;
+    const cw=conf<=2?2:conf>=4?0.7:1;
+    return ef*cw;
+  };
+
+  // weighted shuffle
+  const weighted=[];
+  pool.forEach(q=>{const w=Math.ceil(topicWeight(q));for(let i=0;i<w;i++)weighted.push(q);});
+  weighted.sort(()=>Math.random()-.5);
+
+  // de-dupe by question id
+  const seen=new Set();const result=[];
+  for(const q of weighted){
+    if(!seen.has(q.id||q.question)){seen.add(q.id||q.question);result.push(q);}
+    if(result.length>=count)break;
+  }
+  return result;
+}
+
+function startGeneratedExam(){
+  const selTopics=getSelectedGenTopics();
+  if(!selTopics.length){alert('Select at least one topic with MCQs.');return;}
+  const diff=document.getElementById('gen-diff').value;
+  const countSel=document.getElementById('gen-count').value;
+  const count=countSel==='custom'?(parseInt(document.getElementById('gen-custom').value)||20):parseInt(countSel);
+  const qs=buildExamQuestions(selTopics,diff,count);
+  if(!qs.length){alert('No MCQs match your selection. Try adjusting the difficulty or topics.');return;}
+  examSession={questions:qs,current:0,score:0,results:[],startTime:Date.now()};
+  document.getElementById('exam-modal-title').textContent='Mock Exam ('+qs.length+' questions)';
+  renderExamQuestion();
+  document.getElementById('exam-modal').classList.add('open');
+}
+
+function startDailyExam(){
+  const examFocusTopics=state.topics.filter(t=>t.exam_focus).map(t=>t.id);
+  const allTopicIds=state.topics.map(t=>t.id);
+  const recentCorrect=new Set();
+  // find MCQs answered correctly in last 3 days — approximation via results in localStorage
+  const threshold=new Date(TODAY);threshold.setDate(threshold.getDate()-3);
+  // build pool
+  let examPool=[];
+  if(examFocusTopics.length){
+    const focusMcqs=state.mcqs.filter(m=>examFocusTopics.includes(m.topic_id));
+    const otherMcqs=state.mcqs.filter(m=>!examFocusTopics.includes(m.topic_id));
+    const focusCount=Math.ceil(20*0.6);const otherCount=20-focusCount;
+    examPool=[...buildExamQuestions(examFocusTopics,'all',focusCount),...buildExamQuestions(state.topics.filter(t=>!t.exam_focus).map(t=>t.id),'all',otherCount)];
+  } else {
+    examPool=buildExamQuestions(allTopicIds,'all',20);
+  }
+  if(!examPool.length){return;}
+  examPool.sort(()=>Math.random()-.5);
+  examSession={questions:examPool.slice(0,20),current:0,score:0,results:[],startTime:Date.now()};
+  document.getElementById('exam-modal-title').textContent='Daily Exam ('+examSession.questions.length+' questions)';
+  renderExamQuestion();
+  document.getElementById('exam-modal').classList.add('open');
+  localStorage.setItem('mt_daily_exam_date',todayStr());
+}
+
+function renderExamQuestion(){
+  const qs=examSession.questions;const idx=examSession.current;
+  if(idx>=qs.length)return;
+  const pct=Math.round(idx/qs.length*100);
+  document.getElementById('exam-progress-fill').style.width=pct+'%';
+  const q=qs[idx];const opts=JSON.parse(q.options||'[]');
+  const diffCls={Easy:'diff-easy',Medium:'diff-medium',Hard:'diff-hard'}[q.difficulty||'Medium']||'diff-medium';
+  const topicName=state.topics.find(t=>t.id===q.topic_id)?.name||'';
+  document.getElementById('exam-modal-body').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <div style="font-size:12px;color:var(--text2)">${idx+1} / ${qs.length}</div>
+      <div style="display:flex;gap:6px"><span class="diff-badge ${diffCls}">${q.difficulty||'Medium'}</span>${topicName?`<span class="resource-chip">${topicName}</span>`:''}</div>
+    </div>
+    <div style="font-size:15px;font-weight:500;margin-bottom:1rem;line-height:1.6">${q.question}</div>
+    <div id="exam-options">${opts.map((o,i)=>`<div class="mcq-option" id="eopt-${i}" onclick="answerExamMCQ(${i},${q.correct_index},\`${(q.explanation||'').replace(/`/g,"'")}\`,\`${(q.question||'').replace(/`/g,"'")}\`,${JSON.stringify(opts)},\`${q.topic_id||''}\`,\`${q.difficulty||'Medium'}\`)">${String.fromCharCode(65+i)}) ${o}</div>`).join('')}</div>
+    <div id="exam-explanation" style="display:none;margin-top:1rem;padding:10px 14px;background:var(--bg2);border-radius:var(--radius);font-size:13px;color:var(--text2)"></div>
+    <div id="exam-claude-btn" style="display:none;margin-top:8px"></div>
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <button class="btn btn-primary" id="exam-next-btn" onclick="nextExamQ()" style="display:none">${idx===qs.length-1?'See results':'Next →'}</button>
+    </div>`;
+}
+
+function answerExamMCQ(selected,correct,explanation,question,opts,topicId,difficulty){
+  const isCorrect=selected===correct;
+  document.querySelectorAll('#exam-options .mcq-option').forEach((el,i)=>{
+    if(i===correct)el.classList.add('correct');
+    else if(i===selected&&!isCorrect)el.classList.add('wrong');
+    else el.classList.add('revealed');
+    el.style.pointerEvents='none';
+  });
+  if(isCorrect)examSession.score++;
+  examSession.results.push({correct:isCorrect,difficulty,topicId});
+  const ex=document.getElementById('exam-explanation');
+  if(ex){ex.style.display='';ex.textContent=explanation||'';}
+  const cb=document.getElementById('exam-claude-btn');
+  if(cb){
+    const optText=opts.map((o,i)=>`${String.fromCharCode(65+i)}) ${o}${i===correct?' ✓':''}`).join('\n');
+    const prompt=`I just answered an MCQ and need clarification.\n\nQuestion: ${question}\n\nOptions:\n${optText}\n\nExplanation given: ${explanation||'None provided'}\n\nI ${isCorrect?'got this right but want':'got this wrong and need'} a deeper explanation. Please explain the key concept being tested and any related clinical pearls.`;
+    cb.style.display='';
+    cb.innerHTML=`<button class="btn btn-claude btn-sm" onclick="askClaudeAboutMCQ(\`${prompt.replace(/`/g,"'")}\`)">Ask Claude for clarification ↗</button>`;
+  }
+  const nb=document.getElementById('exam-next-btn');if(nb)nb.style.display='';
+}
+
+function nextExamQ(){
+  examSession.current++;
+  if(examSession.current>=examSession.questions.length){
+    const elapsed=Math.round((Date.now()-examSession.startTime)/1000);
+    closeExamModal();
+    showResults(examSession.score,examSession.questions.length,examSession.results,elapsed,()=>startGeneratedExam());
+    return;
+  }
+  renderExamQuestion();
+}
+
+function closeExamModal(){document.getElementById('exam-modal').classList.remove('open');}
+
+// ---- HISTORY ----
 function renderModalHistory(t){
   const sessions=state.sessions.filter(s=>s.topic_id===t.id);
   let html=sessions.length?sessions.map(s=>`<div style="padding:10px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:500">${fmtDate(s.studied_on)}</div><span style="color:var(--amber);font-size:13px">${'★'.repeat(s.confidence||3)}${'☆'.repeat(5-(s.confidence||3))}</span></div>${s.notes?`<div style="font-size:12px;color:var(--text2);margin-top:4px">${s.notes}</div>`:''}</div>`).join(''):'<div class="empty-state" style="padding:1.5rem">No review sessions yet.</div>';
   document.getElementById('modal-body').innerHTML=html;
 }
 
+// ---- RENDER TODAY ----
 function renderToday(){
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // streak
+  const streak=calcStreak();
+  const sb=document.getElementById('streak-bar');
+  sb.innerHTML=streak>0?`<div class="streak-card"><div class="streak-num">${streak}</div><div><div style="font-size:14px;font-weight:500;color:var(--amber-text)">Day streak</div><div style="font-size:12px;color:var(--amber-text);opacity:.8">Keep it going — study at least one topic today</div></div></div>`:'';
+
+  // countdown
   const cb=document.getElementById('exam-countdown-bar');
   if(state.exam&&state.exam.exam_date){
     const days=daysBetween(state.exam.exam_date)*-1;
     if(days>=0)cb.innerHTML=`<div class="countdown-card"><div><div class="countdown-label">${state.exam.label||'Next exam'}</div><div style="font-size:12px;color:var(--purple-text);opacity:.7">${fmtDate(state.exam.exam_date)}</div></div><div style="text-align:right"><div class="countdown-days">${days}</div><div class="countdown-label">days to go</div></div></div>`;
     else cb.innerHTML='';
   } else cb.innerHTML='';
+
+  // daily exam card
+  const deb=document.getElementById('daily-exam-bar');
+  const lastDailyDate=localStorage.getItem('mt_daily_exam_date');
+  const hasDailyToday=lastDailyDate===todayStr();
+  if(state.mcqs.length>0){
+    deb.innerHTML=`<div class="daily-exam-card"><div><div style="font-size:14px;font-weight:600;color:var(--blue-text)">Daily Exam</div><div style="font-size:12px;color:var(--blue-text);opacity:.8">${state.mcqs.length} questions in bank${hasDailyToday?' · Completed today':''}</div></div><button class="btn btn-primary btn-sm" onclick="startDailyExam()">${hasDailyToday?'Retake':'Start'}</button></div>`;
+  } else {deb.innerHTML='';}
+
   const urgent=state.topics.filter(t=>urgency(t)==='urgent');
   const due=state.topics.filter(t=>urgency(t)==='due');
-  const ok=state.topics.filter(t=>urgency(t)==='ok');
   const examDue=state.topics.filter(t=>t.exam_focus&&urgency(t)!=='ok');
+  const tomorrow=state.topics.filter(t=>isTomorrow(t)&&urgency(t)==='ok');
+
   document.getElementById('today-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Total topics</div><div class="metric-value">${state.topics.length}</div></div>
     <div class="metric"><div class="metric-label">Overdue</div><div class="metric-value" style="color:var(--red)">${urgent.length}</div></div>
     <div class="metric"><div class="metric-label">Due today</div><div class="metric-value" style="color:var(--amber)">${due.length}</div></div>
-    <div class="metric"><div class="metric-label">Up to date</div><div class="metric-value" style="color:var(--green)">${ok.length}</div></div>`;
+    <div class="metric"><div class="metric-label">Due tomorrow</div><div class="metric-value" style="color:var(--blue)">${tomorrow.length}</div></div>`;
+
   function tc(t,type){
     const days=t.last_studied?daysBetween(t.last_studied):null;
-    const cls={urgent:'urgent',due:'soon',exam:'exam-focus',ok:'ok'}[type]||'soon';
+    const cls={urgent:'urgent',due:'soon',exam:'exam-focus',tomorrow:'tomorrow'}[type]||'soon';
     return`<div class="today-card ${cls}" onclick="openTopicModal('${t.id}')"><div class="today-card-inner"><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;margin-bottom:2px">${t.name}</div><div style="font-size:12px;color:var(--text2)">${t.system||'No category'} · ${days!==null?days+'d ago':'Never studied'} · ${'★'.repeat(t.confidence||3)}</div></div><div style="display:flex;gap:6px;align-items:center;flex-shrink:0">${urgencyTag(t)}${t.exam_focus?'<span class="exam-badge">exam</span>':''}</div></div></div>`;
   }
+
   const isEmpty=state.topics.length===0;
   document.getElementById('today-empty').style.display=isEmpty?'':'none';
   const us=document.getElementById('today-urgent-section');us.style.display=urgent.length&&!isEmpty?'':'none';
@@ -659,11 +1075,11 @@ function renderToday(){
   document.getElementById('today-due-list').innerHTML=dueOnly.map(t=>tc(t,'due')).join('');
   const es=document.getElementById('today-exam-section');es.style.display=examDue.length&&!isEmpty?'':'none';
   document.getElementById('today-exam-list').innerHTML=examDue.map(t=>tc(t,'exam')).join('');
-  const os=document.getElementById('today-ok-section');const okT=ok.filter(t=>!t.exam_focus);
-  os.style.display=okT.length&&!isEmpty?'':'none';
-  document.getElementById('today-ok-list').innerHTML=okT.slice(0,6).map(t=>tc(t,'ok')).join('')+(okT.length>6?`<div style="font-size:13px;color:var(--text2);padding:8px 1rem">+ ${okT.length-6} more up to date</div>`:'');
+  const ts=document.getElementById('today-tomorrow-section');ts.style.display=tomorrow.length&&!isEmpty?'':'none';
+  document.getElementById('today-tomorrow-list').innerHTML=tomorrow.map(t=>tc(t,'tomorrow')).join('');
 }
 
+// ---- RENDER TOPICS ----
 function renderTopics(){
   const systems=[...new Set(state.topics.map(t=>t.system).filter(Boolean))];
   document.getElementById('topic-filters').innerHTML=['all',...systems].map(s=>`<button class="filter-chip ${state.filter===s?'active':''}" onclick="setFilter('${s}')">${s==='all'?'All topics':s}</button>`).join('');
@@ -671,10 +1087,14 @@ function renderTopics(){
   const sorted=[...filtered].sort((a,b)=>urgencyOrder(a)-urgencyOrder(b));
   const el=document.getElementById('topics-list');
   if(!sorted.length){el.innerHTML='<div class="empty-state">No topics yet. <span class="empty-link" onclick="navigate(\'add-topic\')">Add your first topic →</span></div>';return;}
-  el.innerHTML=sorted.map(t=>`<div class="topic-row" onclick="openTopicModal('${t.id}')">${urgencyDot(t)}<div class="topic-info"><div class="topic-name">${t.name}${t.exam_focus?' <span class="exam-badge">exam</span>':''}</div><div class="topic-meta">${t.system||'No category'} · ${t.last_studied?daysBetween(t.last_studied)+'d ago':'Not studied'} · ${t.reps} reviews · ${'★'.repeat(t.confidence||3)}</div></div>${urgencyTag(t)}</div>`).join('');
+  el.innerHTML=sorted.map(t=>{
+    const mcqCount=state.mcqs.filter(m=>m.topic_id===t.id).length;
+    return`<div class="topic-row" onclick="openTopicModal('${t.id}')">${urgencyDot(t)}<div class="topic-info"><div class="topic-name">${t.name}${t.exam_focus?' <span class="exam-badge">exam</span>':''}</div><div class="topic-meta">${t.system||'No category'} · ${t.last_studied?daysBetween(t.last_studied)+'d ago':'Not studied'} · ${t.reps} reviews · ${'★'.repeat(t.confidence||3)} · ${mcqCount} MCQs</div></div>${urgencyTag(t)}</div>`;
+  }).join('');
 }
 function setFilter(f){state.filter=f;renderTopics();}
 
+// ---- RENDER EXAMS ----
 function renderExams(){
   if(state.exam){document.getElementById('exam-date-input').value=state.exam.exam_date||'';document.getElementById('exam-label-input').value=state.exam.label||'';}
   const el=document.getElementById('exam-topics-list');
@@ -683,15 +1103,16 @@ function renderExams(){
   el.innerHTML=sorted.map(t=>`<div class="topic-row">${urgencyDot(t)}<div class="topic-info"><div class="topic-name">${t.name}</div><div class="topic-meta">${t.system||'No category'} · ${t.reps} reviews · interval ${t.next_due||1}d</div></div><label class="toggle" onclick="toggleExamFocus('${t.id}');setTimeout(renderExams,400)"><div class="toggle-track ${t.exam_focus?'on':''}"><div class="toggle-thumb"></div></div><span style="font-size:12px;color:var(--text2)">${t.exam_focus?'Focus':'Off'}</span></label></div>`).join('');
 }
 
+// ---- RENDER PROGRESS ----
 function renderProgress(){
   const total=state.topics.length;const studied=state.topics.filter(t=>t.last_studied).length;
-  const overdue=state.topics.filter(t=>urgency(t)==='urgent').length;
   const avgConf=total?Math.round(state.topics.reduce((a,t)=>a+(t.confidence||3),0)/total*10)/10:0;
+  const streak=calcStreak();
   document.getElementById('progress-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Topics studied</div><div class="metric-value">${studied}/${total}</div></div>
     <div class="metric"><div class="metric-label">Avg confidence</div><div class="metric-value">${avgConf}★</div></div>
     <div class="metric"><div class="metric-label">Total reviews</div><div class="metric-value">${state.sessions.length}</div></div>
-    <div class="metric"><div class="metric-label">MCQs saved</div><div class="metric-value">${state.mcqs.length}</div></div>`;
+    <div class="metric"><div class="metric-label">Day streak</div><div class="metric-value" style="color:var(--amber)">${streak}</div></div>`;
   const weekCounts=Array(7).fill(0);const now=new Date();const dow=(now.getDay()+6)%7;
   for(const s of state.sessions){const sd=new Date(s.studied_on);const diff=Math.floor((now-sd)/86400000);if(diff<7){const idx=(dow-diff+7)%7;weekCounts[idx]++;}}
   const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];const maxW=Math.max(...weekCounts,1);
@@ -707,6 +1128,7 @@ function renderProgress(){
   document.getElementById('attention-list').innerHTML=attention.length?attention.map(t=>`<div class="topic-row" onclick="openTopicModal('${t.id}')">${urgencyDot(t)}<div class="topic-info"><div class="topic-name">${t.name}</div><div class="topic-meta">${t.system||''} · confidence ${'★'.repeat(t.confidence||3)}</div></div>${urgencyTag(t)}</div>`).join(''):'<div style="font-size:13px;color:var(--text2)">Study some topics first to see attention areas.</div>';
 }
 
+// ---- POMODORO ----
 let pomoState={len:25,remaining:25*60,running:false,phase:'focus',sessions:0,minutes:0,iv:null};
 function setPomoLen(m){pomoState.len=m;pomoState.remaining=m*60;pomoState.running=false;clearInterval(pomoState.iv);document.getElementById('pomo-btn').textContent='Start';updatePomoDisplay();}
 function togglePomo(){
@@ -734,8 +1156,17 @@ function updatePomoDisplay(){
   if(arc){arc.style.strokeDashoffset=502.65*(1-pomoState.remaining/total);arc.style.stroke=pomoState.phase==='focus'?'var(--green)':'var(--blue)';}
 }
 
+// ---- EXAM GENERATOR custom count toggle ----
+document.addEventListener('change',function(e){
+  if(e.target&&e.target.id==='gen-count'){
+    document.getElementById('gen-custom-wrap').style.display=e.target.value==='custom'?'':'none';
+  }
+});
+
 function renderAll(){renderToday();renderTopics();renderExams();renderProgress();}
 document.getElementById('topic-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('exam-modal').addEventListener('click',function(e){if(e.target===this)closeExamModal();});
+document.getElementById('results-overlay').addEventListener('click',function(e){if(e.target===this)closeResults();});
 tryAutoLogin();
 </script>
 </body>
