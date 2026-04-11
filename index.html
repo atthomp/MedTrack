@@ -749,7 +749,7 @@ function renderModalQuiz(t){
         <div style="display:flex;gap:6px;align-items:center"><span class="diff-badge ${diffCls}">${q.difficulty||'Medium'}</span><span style="font-size:12px;color:var(--green-text)">Score: ${quizState.score}/${quizState.current}</span></div>
       </div>
       <div style="font-size:15px;font-weight:500;margin-bottom:1rem;line-height:1.5">${q.question}</div>
-      <div id="quiz-options">${opts.map((o,i)=>`<div class="mcq-option" id="opt-${i}" onclick="answerTopicMCQ(${i},${q.correct_index},\`${(q.explanation||'').replace(/`/g,"'")}\`,\`${(q.question||'').replace(/`/g,"'")}\`,${JSON.stringify(opts)},\`${q.difficulty||'Medium'}\`)">${String.fromCharCode(65+i)}) ${o}</div>`).join('')}</div>
+      <div id="quiz-options">${opts.map((o,i)=>`<div class="mcq-option" id="opt-${i}" data-idx="${i}">${String.fromCharCode(65+i)}) ${o}</div>`).join('')}</div>
       <div id="quiz-explanation" style="display:none;margin-top:1rem;padding:10px 14px;background:var(--bg2);border-radius:var(--radius);font-size:13px;color:var(--text2)"></div>
       <div id="quiz-claude-btn" style="display:none;margin-top:8px"></div>
       <div style="display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap">
@@ -762,6 +762,14 @@ function renderModalQuiz(t){
         <div class="form-group" style="margin:0"><label class="form-label">Paste more MCQs from NotebookLM</label><textarea id="mcq-paste-area" style="min-height:60px" placeholder="Paste additional questions..."></textarea></div>
         <button class="btn btn-sm" style="margin-top:6px" onclick="importMCQs('${t.id}')">Import</button>
       </div>`;
+    document.getElementById('modal-body').innerHTML=html;
+    // attach click listeners safely after render
+    document.querySelectorAll('#quiz-options .mcq-option').forEach(el=>{
+      el.addEventListener('click',function(){
+        answerTopicMCQ(parseInt(this.dataset.idx),q.correct_index,q.explanation||'',q.question||'',opts,q.difficulty||'Medium');
+      });
+    });
+    return;
   }
   document.getElementById('modal-body').innerHTML=html;
 }
@@ -974,12 +982,18 @@ function renderExamQuestion(){
       <div style="display:flex;gap:6px"><span class="diff-badge ${diffCls}">${q.difficulty||'Medium'}</span>${topicName?`<span class="resource-chip">${topicName}</span>`:''}</div>
     </div>
     <div style="font-size:15px;font-weight:500;margin-bottom:1rem;line-height:1.6">${q.question}</div>
-    <div id="exam-options">${opts.map((o,i)=>`<div class="mcq-option" id="eopt-${i}" onclick="answerExamMCQ(${i},${q.correct_index},\`${(q.explanation||'').replace(/`/g,"'")}\`,\`${(q.question||'').replace(/`/g,"'")}\`,${JSON.stringify(opts)},\`${q.topic_id||''}\`,\`${q.difficulty||'Medium'}\`)">${String.fromCharCode(65+i)}) ${o}</div>`).join('')}</div>
+    <div id="exam-options">${opts.map((o,i)=>`<div class="mcq-option" id="eopt-${i}" data-idx="${i}">${String.fromCharCode(65+i)}) ${o}</div>`).join('')}</div>
     <div id="exam-explanation" style="display:none;margin-top:1rem;padding:10px 14px;background:var(--bg2);border-radius:var(--radius);font-size:13px;color:var(--text2)"></div>
     <div id="exam-claude-btn" style="display:none;margin-top:8px"></div>
     <div style="display:flex;gap:8px;margin-top:1rem">
       <button class="btn btn-primary" id="exam-next-btn" onclick="nextExamQ()" style="display:none">${idx===qs.length-1?'See results':'Next →'}</button>
     </div>`;
+  // attach click listeners safely — avoids inline onclick breaking on special characters
+  document.querySelectorAll('#exam-options .mcq-option').forEach(el=>{
+    el.addEventListener('click',function(){
+      answerExamMCQ(parseInt(this.dataset.idx),q.correct_index,q.explanation||'',q.question||'',opts,q.topic_id||'',q.difficulty||'Medium');
+    });
+  });
 }
 
 function answerExamMCQ(selected,correct,explanation,question,opts,topicId,difficulty){
@@ -1171,3 +1185,4 @@ tryAutoLogin();
 </script>
 </body>
 </html>
+
