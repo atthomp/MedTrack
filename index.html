@@ -192,7 +192,11 @@ textarea{resize:vertical;min-height:70px}
           <div class="form-group"><label class="form-label">Topic name *</label><input type="text" id="new-name" placeholder="e.g. Cardiac physiology"/></div>
           <div class="form-group"><label class="form-label">System / category</label><input type="text" id="new-system" placeholder="e.g. Cardiovascular"/></div>
         </div>
-        <div class="form-group"><label class="form-label">Study resources (comma-separated)</label><input type="text" id="new-resources" placeholder="e.g. Guyton Ch.9, Lecturio, Robbins p.430"/></div>
+        <div class="form-group">
+          <label class="form-label">Resources</label>
+          <div id="resources-list"></div>
+          <button type="button" class="btn btn-sm" style="margin-top:6px" onclick="addResourceRow()">+ Add resource</button>
+        </div>
         <div class="form-group"><label class="form-label">Key concepts</label><textarea id="new-concepts" placeholder="Enter key concepts separated by line breaks or commas..."></textarea></div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">First studied date (optional)</label><input type="date" id="new-date"/></div>
@@ -349,8 +353,16 @@ async function loadAll(){
     supa('GET','exam?user_id=eq.'+state.userId+'&limit=1')
   ]);
   state.topics=topics||[];state.sessions=sessions||[];state.mcqs=mcqs||[];state.exam=(exam&&exam[0])||null;
+  try{
+    const lt=localStorage.getItem('mt_local');
+    if(lt){const p=JSON.parse(lt);
+      if(!state.topics.length&&p.topics)state.topics=p.topics;
+      if(!state.sessions.length&&p.sessions)state.sessions=p.sessions;
+      if(!state.mcqs.length&&p.mcqs)state.mcqs=p.mcqs;
+    }
+  }catch(e){}
 }
-function saveLocal(){try{localStorage.setItem('mt_local',JSON.stringify({topics:state.topics}));}catch(e){}}
+function saveLocal(){try{localStorage.setItem('mt_local',JSON.stringify({topics:state.topics,sessions:state.sessions,mcqs:state.mcqs}));}catch(e){}}
 
 function nextInterval(reps,interval,ease,examFocus,confidence){
   const conf=confidence||3;
@@ -364,7 +376,6 @@ function nextInterval(reps,interval,ease,examFocus,confidence){
 function urgency(t){
   if(!t.last_studied)return'new';
   const days=daysBetween(t.last_studied);const due=t.next_due||1;
-  if(t.exam_focus&&days>=1)return'urgent';
   if(days>=due+3)return'urgent';if(days>=due)return'due';if(days>=due-1)return'soon';return'ok';
 }
 function urgencyOrder(t){return{urgent:0,due:1,soon:2,new:3,ok:4}[urgency(t)];}
@@ -393,16 +404,16 @@ async function markStudied(id,dateStr,confidence,notes){
 async function saveTopic(){
   const name=document.getElementById('new-name').value.trim();if(!name){alert('Please enter a topic name.');return;}
   const system=document.getElementById('new-system').value.trim();
-  const resources=document.getElementById('new-resources').value.trim();
+  const resourceRows=[...document.getElementById('resources-list').children];
   const concepts=document.getElementById('new-concepts').value.trim();
   const date=document.getElementById('new-date').value;
   const linkedEl=document.getElementById('new-linked');
   const linked=[...linkedEl.selectedOptions].map(o=>o.value);
-  const reps=date?1:0;const interval=date?nextInterval(1,1,2.5,false,3):1;
+  const reps=date?1:0;const interval=date?nextInterval(0,1,2.5,false,3):1;
   let nextDueDate=null;
   if(date){const nd=new Date(date);nd.setDate(nd.getDate()+interval);nextDueDate=nd.toISOString().split('T')[0];}
   const topic={id:Date.now().toString()+Math.random().toString(36).slice(2),user_id:state.userId,name,system:system||null,
-    resources:resources?resources.split(',').map(r=>r.trim()).filter(Boolean):[],
+    resources:resourceRows.map(row=>({label:row.children[0].value.trim(),url:row.children[1].value.trim()||null})).filter(r=>r.label),
     concepts:concepts?concepts.split(/[\n,]+/).map(c=>c.trim()).filter(Boolean):[],
     last_studied:date||null,reps,ease:2.5,current_interval:interval,next_due:interval,next_due_date:nextDueDate,
     exam_focus:false,confidence:3,linked_topics:linked,created_at:todayStr()};
@@ -434,7 +445,7 @@ async function saveExamDate(){
 }
 
 async function importMCQs(topicId){
-  const raw=document.getElementById('mcq-paste-area').value.trim();if(!raw){alert('Paste MCQs from Claude first.');return;}
+  const raw=document.getElementById('mcq-paste-area').value.trim();if(!raw){alert('Paste MCQs from NotebookLM first.');return;}
   const parsed=parseMCQs(raw);if(!parsed.length){alert('Could not parse MCQs. Use the Claude prompt format.');return;}
   const toSave=parsed.map(q=>({...q,user_id:state.userId,topic_id:topicId}));
   const saved=await supa('POST','mcqs',toSave);
@@ -460,23 +471,46 @@ function parseMCQs(raw){
   return result;
 }
 
-async function exportToNotion(){
-  const key=prompt('Enter your Notion integration token (starts with secret_):');if(!key)return;
-  const pageId=prompt('Enter the Notion page ID to export to:');if(!pageId)return;
-  const blocks=[{object:'block',type:'heading_1',heading_1:{rich_text:[{type:'text',text:{content:'MedTrack Export — '+fmtDate(todayStr())}}]}}];
-  for(const t of state.topics){
-    blocks.push({object:'block',type:'heading_2',heading_2:{rich_text:[{type:'text',text:{content:t.name+(t.system?' ('+t.system+')':'')}}]}});
-    blocks.push({object:'block',type:'paragraph',paragraph:{rich_text:[{type:'text',text:{content:'Reviews: '+t.reps+' | Last: '+fmtDate(t.last_studied)+' | Next in: '+(t.next_due||1)+'d | Confidence: '+'★'.repeat(t.confidence||3)}}]}});
-    if(t.concepts&&t.concepts.length)blocks.push({object:'block',type:'paragraph',paragraph:{rich_text:[{type:'text',text:{content:'Concepts: '+t.concepts.join(', ')}}]}});
-    const mqs=state.mcqs.filter(m=>m.topic_id===t.id);
-    if(mqs.length){for(const q of mqs.slice(0,5))blocks.push({object:'block',type:'bulleted_list_item',bulleted_list_item:{rich_text:[{type:'text',text:{content:q.question}}]}});}
-    if(blocks.length>95)break;
-  }
-  try{
-    const r=await fetch('https://api.notion.com/v1/blocks/'+pageId+'/children',{method:'PATCH',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','Notion-Version':'2022-06-28'},body:JSON.stringify({children:blocks})});
-    const d=await r.json();
-    if(d.object==='error')alert('Notion error: '+d.message);else alert('Exported to Notion!');
-  }catch(e){alert('Export failed. Check your token and page ID.');}
+function addResourceRow(label='',url=''){
+  const div=document.createElement('div');
+  div.style.cssText='display:flex;gap:6px;margin-bottom:6px;align-items:center';
+  div.innerHTML=`<input type="text" placeholder="Label (e.g. Guyton Ch.9)" value="${label}" style="flex:2"/><input type="url" placeholder="Google Drive / NotebookLM link (optional)" value="${url}" style="flex:3"/><button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()" style="flex-shrink:0">✕</button>`;
+  document.getElementById('resources-list').appendChild(div);
+}
+
+function copyNotebookLMPrompt(id){
+  const t=state.topics.find(x=>x.id===id);if(!t)return;
+  const conf=t.confidence||3;
+  const resourceLabels=(t.resources||[]).map(r=>typeof r==='string'?r:r.label).join(', ')||'your course resources';
+  const conceptList=(t.concepts||[]).join(', ')||'the core concepts for this topic';
+  const styles={
+    1:`Generate 5 basic recall MCQs testing definitions and core mechanisms only. Questions should be straightforward with clear single correct answers. No clinical scenarios.`,
+    2:`Generate 5 comprehension MCQs. Ask the student to explain processes, compare two related concepts, or identify the next step in a mechanism. Avoid pure recall.`,
+    3:`Generate 5 application MCQs using brief, straightforward clinical scenarios (1-2 sentences). The clinical context should require applying the concept, not just recalling it.`,
+    4:`Generate 5 complex clinical MCQs. Use multi-step reasoning, competing differentials, or patients with complicating factors. Each vignette should require integrating multiple concepts.`,
+    5:`Generate 5 difficult exam-style vignettes with atypical presentations, high-yield edge cases, or questions that discriminate between similar conditions. These should challenge a well-prepared student.`
+  };
+  const prompt=`I am a medical student preparing for exams. Topic: "${t.name}"${t.system?' ('+t.system+')':''}.
+
+Key concepts: ${conceptList}.
+Resources used: ${resourceLabels}.
+
+${styles[conf]}
+
+Format each question EXACTLY as follows so I can import it into my study tracker:
+
+Q1: [Question text]
+A) [Option A]
+B) *[Correct option — place asterisk before the correct answer only]
+C) [Option C]
+D) [Option D]
+Explanation: [One sentence explaining why the correct answer is right]
+
+Q2: ...`;
+  navigator.clipboard.writeText(prompt).then(()=>{
+    const btn=document.querySelector('.btn-claude');
+    if(btn){const orig=btn.textContent;btn.textContent='Prompt copied ✓';btn.style.background='var(--green)';btn.style.color='#fff';setTimeout(()=>{btn.textContent=orig;btn.style.background='';btn.style.color='';},2500);}
+  }).catch(()=>alert('Copy failed — please copy manually:\n\n'+prompt));
 }
 
 function navigate(page){
@@ -487,7 +521,8 @@ function navigate(page){
   document.querySelectorAll('.nav-item')[map[page]]?.classList.add('active');
   if(page==='add-topic'){
     document.getElementById('new-name').value='';document.getElementById('new-system').value='';
-    document.getElementById('new-resources').value='';document.getElementById('new-concepts').value='';document.getElementById('new-date').value='';
+    document.getElementById('resources-list').innerHTML='';addResourceRow();
+    document.getElementById('new-concepts').value='';document.getElementById('new-date').value='';
     const sel=document.getElementById('new-linked');sel.innerHTML=state.topics.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
   }
   renderAll();
@@ -521,7 +556,7 @@ function renderModalOverview(t){
       <div class="metric"><div class="metric-label">Reviews done</div><div style="font-size:20px;font-weight:600">${t.reps}</div></div>
       <div class="metric"><div class="metric-label">Next interval</div><div style="font-size:20px;font-weight:600">${t.next_due||1}d</div></div>
     </div>`;
-  if(t.resources&&t.resources.length)html+=`<div style="margin-bottom:1rem"><div class="form-label" style="margin-bottom:6px">Resources</div><div>${t.resources.map(r=>`<span class="resource-chip">${r}</span>`).join('')}</div></div>`;
+  if(t.resources&&t.resources.length)html+=`<div style="margin-bottom:1rem"><div class="form-label" style="margin-bottom:6px">Resources</div><div>${t.resources.map(r=>typeof r==='string'?`<span class="resource-chip">${r}</span>`:r.url?`<a href="${r.url}" target="_blank" rel="noopener" class="resource-chip" style="text-decoration:none;color:var(--blue-text);background:var(--blue-bg);border-color:var(--blue)">${r.label} ↗</a>`:`<span class="resource-chip">${r.label}</span>`).join('')}</div></div>`;
   if(t.concepts&&t.concepts.length)html+=`<div style="margin-bottom:1rem"><div class="form-label" style="margin-bottom:6px">Key concepts</div><div class="concepts-list">${t.concepts.map(c=>`<span class="resource-chip">${c}</span>`).join('')}</div></div>`;
   if(linked.length)html+=`<div style="margin-bottom:1rem"><div class="form-label" style="margin-bottom:6px">Linked topics</div><div>${linked.map(l=>`<span class="linked-chip" onclick="closeModal();setTimeout(()=>openTopicModal('${l.id}'),100)">${l.name}</span>`).join('')}</div></div>`;
   html+=`
@@ -534,50 +569,26 @@ function renderModalOverview(t){
       <div style="margin-top:8px"><label class="form-label">Session notes (optional)</label><textarea id="modal-notes" placeholder="What did you cover? Any gaps?" style="min-height:50px"></textarea></div>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="markStudied('${t.id}',document.getElementById('modal-date').value,pendingConf,document.getElementById('modal-notes').value)">Mark studied</button>
-        <button class="btn btn-claude" onclick="studyWithClaude('${t.id}')">Study with Claude ↗</button>
+        <button class="btn btn-claude" onclick="copyNotebookLMPrompt('${t.id}')">Copy prompt for NotebookLM</button>
       </div>
     </div>
     <div style="border-top:0.5px solid var(--border);padding-top:1rem;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn ${t.exam_focus?'':'btn-primary'}" onclick="toggleExamFocus('${t.id}');openTopicModal('${t.id}')">${t.exam_focus?'Remove exam focus':'Set as exam focus'}</button>
-      <button class="btn" onclick="exportToNotion()">Export to Notion ↗</button>
       <button class="btn btn-danger btn-sm" onclick="deleteTopic('${t.id}')">Delete</button>
     </div>`;
   document.getElementById('modal-body').innerHTML=html;
 }
 function setConf(n){pendingConf=n;document.getElementById('conf-stars').innerHTML=[1,2,3,4,5].map(i=>`<span class="star ${i<=n?'active':''}" onclick="setConf(${i})">★</span>`).join('');}
 
-function studyWithClaude(id){
-  const t=state.topics.find(x=>x.id===id);if(!t)return;
-  const prompt=`I am studying for my medicine degree. Please generate 5 MCQs for the topic: "${t.name}"${t.system?' ('+t.system+')':''}.
-
-Key concepts to cover: ${(t.concepts||[]).join(', ')||'general concepts'}.
-Resources: ${(t.resources||[]).join(', ')||'standard medical textbooks'}.
-
-Format each question EXACTLY like this so I can import them back into my study tracker:
-
-Q1: [Question text]
-A) [Option A]
-B) *[Correct option — mark the correct answer with an asterisk before it]
-C) [Option C]
-D) [Option D]
-Explanation: [Brief explanation of the correct answer]
-
-Q2: ...
-
-Please generate clinical-style questions appropriate for a medical student.`;
-  window.open('https://claude.ai/new?q='+encodeURIComponent(prompt),'_blank');
-}
-
 let quizState={current:0,score:0};
 function renderModalQuiz(t){
   const mqs=state.mcqs.filter(m=>m.topic_id===t.id);
   let html='';
   if(!mqs.length){
-    html=`<div style="margin-bottom:1rem;font-size:13px;color:var(--text2)">No MCQs yet. Click "Study with Claude" to generate questions, then paste them below.</div>
-      <div class="form-group"><label class="form-label">Paste MCQs from Claude</label><textarea id="mcq-paste-area" style="min-height:120px" placeholder="Paste the formatted MCQs from Claude here..."></textarea></div>
+    html=`<div style="margin-bottom:1rem;font-size:13px;color:var(--text2)">No MCQs yet. Use the <strong>Copy prompt for NotebookLM</strong> button on the Overview tab to generate questions, then paste them below.</div>
+      <div class="form-group"><label class="form-label">Paste MCQs from NotebookLM</label><textarea id="mcq-paste-area" style="min-height:120px" placeholder="Paste the formatted MCQs here..."></textarea></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-primary" onclick="importMCQs('${t.id}')">Import MCQs</button>
-        <button class="btn btn-claude" onclick="studyWithClaude('${t.id}')">Generate with Claude ↗</button>
       </div>`;
   } else {
     if(quizState.current>=mqs.length)quizState.current=0;
@@ -596,7 +607,7 @@ function renderModalQuiz(t){
         <button class="btn btn-sm" onclick="quizState={current:0,score:0};renderModalQuiz(state.topics.find(x=>x.id==='${t.id}'))">Restart</button>
       </div>
       <div style="margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem">
-        <div class="form-group" style="margin:0"><label class="form-label">Paste more MCQs from Claude</label><textarea id="mcq-paste-area" style="min-height:60px" placeholder="Paste additional questions..."></textarea></div>
+        <div class="form-group" style="margin:0"><label class="form-label">Paste more MCQs from NotebookLM</label><textarea id="mcq-paste-area" style="min-height:60px" placeholder="Paste additional questions..."></textarea></div>
         <button class="btn btn-sm" style="margin-top:6px" onclick="importMCQs('${t.id}')">Import</button>
       </div>`;
   }
